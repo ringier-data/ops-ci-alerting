@@ -1,0 +1,3 @@
+[submodule "ops-ci-shared"]
+	path = ops-ci-shared
+	url = https://github.com/ringier-data/ops-ci-shared.git

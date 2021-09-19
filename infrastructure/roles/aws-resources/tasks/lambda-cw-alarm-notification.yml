@@ -1,0 +1,30 @@
+---
+# ====================== Test & Build Lambda ===================
+
+- name: '[cw-alarm-notification] Install dependencies'
+  command: npm install
+  args:
+    chdir: '{{ role_path }}/../../../app/cw-alarm-notification'
+
+- name: '[cw-alarm-notification] Test'
+  command: npm run test
+  args:
+    chdir: '{{ role_path }}/../../../app/cw-alarm-notification'
+
+- name: '[cw-alarm-notification] Prune dev dependencies'
+  command: npm prune --production
+  args:
+    chdir: '{{ role_path }}/../../../app/cw-alarm-notification'
+
+# ====================== Cloudformation: Deploy ===================
+
+- name: 'get Grafana CloudFormation template'
+  set_fact:
+    template_filename: '{{ role_path }}/files/cf-lambda-cw-alarm-notification.yml'
+
+- include_role:
+    name: 'ringier.aws_cicd.build_push_docker_image'
+  vars:
+    stack_name: '{{env}}-{{project_id}}-cw-alarm-notification'
+    template: '{{ template_filename }}'
+

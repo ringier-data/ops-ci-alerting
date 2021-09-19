@@ -1,0 +1,4 @@
+---
+
+- import_tasks: 'lambda-error-reporting.yml'
+- import_tasks: 'lambda-cw-alarm-notification.yml'

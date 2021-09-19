@@ -1,0 +1,3 @@
+# == Lambda Error Reporting ==
+ignore_functions: '' # possible to provide comma-separated list for which lambdas to _not_ report Lambda Errors
+

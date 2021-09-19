@@ -1,0 +1,19 @@
+---
+  - name: 'create monitoring infrastructure'
+    hosts: 'localhost'
+    connection: 'local'
+    collections: 'ringier.aws_cicd'
+    gather_facts: false
+    vars:
+      aws_region: 'eu-central-1'
+      project_id: 'rcplus'
+      project_version: 0.0.1
+      software_component: 'monitoring'
+    pre_tasks:
+      - fail: msg='specify an environment (dev, stg, prod)'
+        when: env not in ['dev', 'stg', 'prod']
+      - include_vars: 'environment_vars/{{ env }}.yml'
+    roles:
+      - 'init_workspace'
+      - 'aws-resources'
+      - 'del_workspace'

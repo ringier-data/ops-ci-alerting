@@ -1,0 +1,62 @@
+---
+Transform: AWS::Serverless-2016-10-31
+Description: 'Rcplus - - Slack Notification for CloudWatch Alarm v{{ project_version }}'
+
+Resources:
+
+# ======== Slack Alarm Notification Lambda =======
+
+  LambdaErrorReportingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: '/aws/lambda/{{ env }}-{{ project_id }}-cw-alarm-notification'
+      RetentionInDays: 3
+
+  LambdaErrorReportingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: '{{ env }}-{{ project_id }}-cw-alarm-notification'
+      CodeUri: '{{ role_path }}/../../../app/cw-alarm-notification'
+      Description: Send a slack message when any AWS CloudWatch Alarm state changes
+      Events:
+        EventBridgeRuleCWAlarm:
+          Type: EventBridgeRule
+          Properties:
+            Pattern: {
+                "source": [ "aws.cloudwatch" ],
+                "detail-type": [ "CloudWatch Alarm State Change" ]
+              }
+        EventBridgeRuleAwsBatch:
+          Type: EventBridgeRule
+          Properties:
+            Pattern: {
+                "source": [ "aws.batch" ],
+                "detail-type": [
+                  "Batch Job State Change"
+                ],
+                "detail": {
+                  "status": [
+                    "FAILED"
+                  ]
+                }
+              }
+      Environment:
+        Variables:
+          SLACK_HOOK_URL: '{{ slack_hook_url }}'
+          ENVIRONMENT: '{{ env }}'
+      Handler: index.handler
+      MemorySize: 128
+      Runtime: nodejs14.x
+      Timeout: 15
+      Policies:
+      - Version: '2012-10-17' 
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudwatch:ListMetrics
+              - cloudwatch:GetMetricData
+              - logs:Describe*
+              - logs:List*
+              - logs:Get*
+              - logs:FilterLogEvents
+            Resource: '*'

@@ -1,0 +1,44 @@
+---
+Transform: AWS::Serverless-2016-10-31
+Description: 'Rcplus - Lamda Error Reporting v{{ project_version }}'
+
+Resources:
+
+# ======== Slack Lambda Error Notification Lambda =======
+
+  LambdaErrorReportingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: '/aws/lambda/{{ env }}-{{ project_id }}-lambda-error-reporting'
+      RetentionInDays: 3
+
+  LambdaErrorReportingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: '{{ env }}-{{ project_id }}-lambda-error-reporting'
+      CodeUri: '{{ role_path }}/../../../app/lambda-error-reporting/dist'
+      Description: Send a slack message on if Lambda reports Errors in CloudWatch Metrics
+      Events:
+        Scheduled:
+          Type: Schedule
+          Properties:
+            Description: 'Runs lambda-error-reporting, which checks if any Lambda functions have reported an error and if so posts to Slack'
+            Name: '{{ env }}-{{ project_id }}-lambda-error-reporting-schedule'
+            Schedule: 'rate(20 minutes)'
+      Environment:
+        Variables:
+          SLACK_HOOK_URL: '{{ slack_hook_url }}'
+          RULE_INTERVAL_IN_MINUTES: '25' # this is +5 minutes to capture any delay in the Metrics reporting (this has happened that Lambda did not report ERROR in Lambda withing 1 minute!) and timeout errors
+          IGNORE_FUNCTIONS: '{{ ignore_functions }}'
+      Handler: src/index.handler
+      MemorySize: 128
+      Runtime: nodejs12.x
+      Timeout: 15
+      Policies:
+      - Version: '2012-10-17' 
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudwatch:ListMetrics
+              - cloudwatch:GetMetricData
+            Resource: '*'

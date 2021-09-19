@@ -1,0 +1,21 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-central-1:956745350775:dev-sso-log-errors:7472ca95-3aab-422c-8fea-0e286be8855f",
+      "Sns": {
+        "Type" : "Notification",
+        "MessageId" : "f2082d6a-5fc6-5245-9f89-7abb40376003",
+        "TopicArn" : "arn:aws:sns:eu-central-1:199714121063:stg-sso-log-errors",
+        "Subject" : "ALARM: \"sso-web-hooks-lambda-stg-WebHooksMetricFilterAlarm-1XPC27WQKUXOI\" in EU (Frankfurt)",
+        "Message" : "{\"AlarmName\":\"sso-web-hooks-lambda-stg-WebHooksMetricFilterAlarm-1XPC27WQKUXOI\",\"AlarmDescription\":\"Triggered when webhook errors occurs more often than 1 time per 5 minutes\",\"AWSAccountId\":\"199714121063\",\"NewStateValue\":\"ALARM\",\"NewStateReason\":\"Threshold Crossed: 1 out of the last 1 datapoints [3.0 (08/09/20 05:44:00)] was greater than the threshold (1.0) (minimum 1 datapoint for OK -> ALARM transition).\",\"StateChangeTime\":\"2020-09-08T05:59:13.148+0000\",\"Region\":\"EU (Frankfurt)\",\"AlarmArn\":\"arn:aws:cloudwatch:eu-central-1:199714121063:alarm:sso-web-hooks-lambda-stg-WebHooksMetricFilterAlarm-1XPC27WQKUXOI\",\"OldStateValue\":\"OK\",\"Trigger\":{\"MetricName\":\"ExecutorLoggedErrors\",\"Namespace\":\"Webhooks\",\"StatisticType\":\"Statistic\",\"Statistic\":\"SUM\",\"Unit\":null,\"Dimensions\":[],\"Period\":300,\"EvaluationPeriods\":1,\"ComparisonOperator\":\"GreaterThanThreshold\",\"Threshold\":1.0,\"TreatMissingData\":\"- TreatMissingData:                    notBreaching\",\"EvaluateLowSampleCountPercentile\":\"\"}}",
+        "Timestamp" : "2020-09-08T05:59:13.186Z",
+        "SignatureVersion" : "1",
+        "Signature" : "ZWlQMjx//jk1QdVSmbbNALOpAxqF3AM3qs42XFluTsnL6a2c2gv26O8FJ4tC0OmaMFKzrqYcolTpsLbKYypKqjRvaze86+WjPJ1I3HJ0WOnGUTEPgSVGDjUxRskHmXQI3j5SFaYmVZjzDz1LIK8va3zHhvahIvs4GLSiU1krLFEVYQkHafOE235RRmTwSRVYbVN2WFOIvBLWZiAQWzbH+CfSYnswYfCnQdLhcYNQQ37QwyylxGFn9EJURbub2rK1U0dXNQO03UR5NPczg+j7/xcYRiTkA6ZcKeKxImjt5yO+JpKaA0jiPucnmkqdXVRQeXaXzG/RN9+YxR6/EAmYIw==",
+        "SigningCertURL" : "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
+        "UnsubscribeURL" : "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:199714121063:stg-sso-log-errors:324242ae-9d98-41f8-a70f-bbd6fa8e57a2"
+      }      
+    }
+  ]
+}
