@@ -16,7 +16,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: '{{ env }}-{{ project_id }}-lambda-error-reporting'
-      CodeUri: '{{ role_path }}/../../../app/lambda-error-reporting/dist'
+      CodeUri: '{{ playbook_dir }}/../app/lambda-error-reporting/dist'
       Description: Send a slack message on if Lambda reports Errors in CloudWatch Metrics
       Events:
         Scheduled:

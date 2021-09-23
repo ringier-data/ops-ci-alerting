@@ -13,6 +13,7 @@
       - fail: msg='specify an environment (dev, stg, prod)'
         when: env not in ['dev', 'stg', 'prod']
       - include_vars: 'environment_vars/{{ env }}.yml'
+      - include_vars: 'environment_vars/{{ env }}_vault.yml'
     roles:
       - 'init_workspace'
       - 'aws-resources'

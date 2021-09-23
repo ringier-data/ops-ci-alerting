@@ -1,6 +1,6 @@
 ---
 Transform: AWS::Serverless-2016-10-31
-Description: 'Rcplus - - Slack Notification for CloudWatch Alarm v{{ project_version }}'
+Description: 'Rcplus - Slack Notification for CloudWatch Alarm v{{ project_version }}'
 
 Resources:
 
@@ -16,7 +16,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: '{{ env }}-{{ project_id }}-cw-alarm-notification'
-      CodeUri: '{{ role_path }}/../../../app/cw-alarm-notification'
+      CodeUri: '{{ playbook_dir }}/../app/cw-alarm-notification'
       Description: Send a slack message when any AWS CloudWatch Alarm state changes
       Events:
         EventBridgeRuleCWAlarm:
