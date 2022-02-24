@@ -1,0 +1,7 @@
+---
+account_groups:
+  - rcplus
+environments:
+  - dev
+  - stg
+  - prod
