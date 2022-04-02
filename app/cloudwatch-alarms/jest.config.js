@@ -13,14 +13,6 @@ module.exports = {
   },
   coverageReporters: ['text', 'lcov', 'html'],
   collectCoverageFrom: ['src/**/*.*'],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
-  },
   globals: {
     'ts-jest': {
       tsconfig: './test/tsconfig.json',
