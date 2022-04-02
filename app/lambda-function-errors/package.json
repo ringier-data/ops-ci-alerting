@@ -1,6 +1,6 @@
 {
   "name": "lambda-function-errors",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Reports to Slack Webhook if a lambda function has failed withing a specified time range",
   "main": "dist/src/index.js",
   "scripts": {
@@ -11,7 +11,9 @@
     "tslint": "tslint 'src/**/*.ts' 'test/**/*.ts'",
     "tslint:fix": "tslint --fix 'src/**/*.ts' 'test/**/*.ts'"
   },
-  "files": ["dist/src/*.js"],
+  "files": [
+    "dist/src/*.js"
+  ],
   "devDependencies": {
     "@types/aws-lambda": "^8.10.68",
     "@types/jest": "^26.0.14",
