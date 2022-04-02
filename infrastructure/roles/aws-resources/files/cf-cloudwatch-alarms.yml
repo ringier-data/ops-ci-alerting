@@ -1,6 +1,7 @@
 ---
 Transform: AWS::Serverless-2016-10-31
-Description: 'Rcplus - Slack Notification for CloudWatch Alarm v{{ project_version }}'
+Description: 'RC+/DevOps - Slack notification for CloudWatch Alarm v{{ project_version }}'
+
 
 Resources:
 
@@ -9,25 +10,31 @@ Resources:
   LambdaErrorReportingLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: '/aws/lambda/{{ env }}-{{ project_id }}-cw-alarm-notification'
+      LogGroupName: '/aws/lambda/{{ env }}-{{ project_id }}-cloudwatch-alarms'
       RetentionInDays: 3
+      Tags:
+        - { Key: 'Name', Value: '{{ env }}-{{ project_id }}-cloudwatch-alarms' }
+        - { Key: 'Project', Value: '{{ project_id }}' }
+        - { Key: 'Environment', Value: '{{ env }}' }
+        - { Key: 'Version', Value: 'v{{ project_version }}' }
+        - { Key: 'Repository', Value: '{{ git_info.repo_name }}' }
 
   LambdaErrorReportingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: '{{ env }}-{{ project_id }}-cw-alarm-notification'
-      CodeUri: '{{ playbook_dir }}/../app/cw-alarm-notification'
-      Description: Send a slack message when any AWS CloudWatch Alarm state changes
+      FunctionName: '{{ env }}-{{ project_id }}-cloudwatch-alarms'
+      CodeUri: '{{ lambda_code_path }}'
+      Description: 'Send a slack message when any AWS CloudWatch Alarm state changes'
       Events:
         EventBridgeRuleCWAlarm:
-          Type: EventBridgeRule
+          Type: 'EventBridgeRule'
           Properties:
             Pattern: {
                 "source": [ "aws.cloudwatch" ],
                 "detail-type": [ "CloudWatch Alarm State Change" ]
               }
         EventBridgeRuleAwsBatch:
-          Type: EventBridgeRule
+          Type: 'EventBridgeRule'
           Properties:
             Pattern: {
                 "source": [ "aws.batch" ],
@@ -42,7 +49,7 @@ Resources:
               }
       Environment:
         Variables:
-          SLACK_HOOK_URL: '{{ slack_hook_url }}'
+          SLACK_WEBHOOK_URL: '{{ slack_webhook_url }}'
           ENVIRONMENT: '{{ env }}'
       Handler: index.handler
       MemorySize: 128

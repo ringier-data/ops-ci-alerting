@@ -1,19 +1,18 @@
 ---
-  - name: 'create monitoring infrastructure'
+  - name: 'create alerting infrastructure'
     hosts: 'localhost'
     connection: 'local'
     collections: 'ringier.aws_cicd'
     gather_facts: false
     vars:
       aws_region: 'eu-central-1'
-      project_id: 'rcplus'
+      project_id: '{{ lookup("env", "PROJECT_ID") }}'
       project_version: 0.0.1
-      software_component: 'monitoring'
+      software_component: 'devops'
     pre_tasks:
       - fail: msg='specify an environment (dev, stg, prod)'
         when: env not in ['dev', 'stg', 'prod']
       - include_vars: 'environment_vars/{{ env }}.yml'
-      - include_vars: 'environment_vars/{{ env }}_vault.yml'
     roles:
       - 'init_workspace'
       - 'aws-resources'

@@ -4,15 +4,15 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "allowJs": false,
-    "declaration": true,
+    "declaration": false,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "checkJs": false,
     "esModuleInterop": true,
     "lib": [
-      "es2019"
+      "es2020"
     ],
-    "target": "es2019",
+    "target": "es2020",
     "sourceMap": true,
     "module": "commonjs",
     "allowSyntheticDefaultImports": true,
@@ -44,8 +44,7 @@
     "baseUrl": ".",
     "paths": {
       "*": [
-          "node_modules/*",
-          "src/@types/*"
+          "node_modules/*"
       ]
     }    
   },

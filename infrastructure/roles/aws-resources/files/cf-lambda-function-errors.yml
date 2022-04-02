@@ -1,0 +1,55 @@
+---
+Transform: AWS::Serverless-2016-10-31
+Description: 'RC+/DevOps - Slack notification for Lambda function errors v{{ project_version }}'
+
+
+Resources:
+
+  LambdaErrorReportingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: '/aws/lambda/{{ env }}-{{ project_id }}-lambda-function-errors'
+      RetentionInDays: 3
+      Tags:
+        - { Key: 'Name', Value: '{{ env }}-{{ project_id }}-lambda-function-errors' }
+        - { Key: 'Project', Value: '{{ project_id }}' }
+        - { Key: 'Environment', Value: '{{ env }}' }
+        - { Key: 'Version', Value: 'v{{ project_version }}' }
+        - { Key: 'Repository', Value: '{{ git_info.repo_name }}' }
+
+  LambdaErrorReportingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: '{{ env }}-{{ project_id }}-lambda-function-errors'
+      CodeUri: '{{ lambda_code_path }}'
+      Description: 'Send a Slack message when Lambda functions reported errors in CloudWatch Metrics'
+      Events:
+        Scheduled:
+          Type: 'Schedule'
+          Properties:
+            Description: 'Runs lambda-function-errors, which checks if any Lambda functions have reported an error and if so posts to Slack'
+            Name: '{{ env }}-{{ project_id }}-lambda-function-errors-schedule'
+            Schedule: 'rate(20 minutes)'
+      Environment:
+        Variables:
+          SLACK_WEBHOOK_URL: '{{ slack_webhook_url }}'
+          RULE_INTERVAL_IN_MINUTES: '25' # this is +5 minutes to capture any delay in the Metrics reporting (this has happened that Lambda did not report ERROR in Lambda withing 1 minute!) and timeout errors
+          IGNORE_FUNCTIONS: '{{ ignore_functions }}'
+      Handler: dist/src/index.handler
+      MemorySize: 128
+      Runtime: nodejs14.x
+      Timeout: 15
+      Policies:
+      - Version: '2012-10-17' 
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudwatch:ListMetrics
+              - cloudwatch:GetMetricData
+            Resource: '*'
+      Tags:
+        Name: '{{ env }}-{{ project_id }}-lambda-function-errors'
+        Project: '{{ project_id }}'
+        Environment: '{{ env }}'
+        Version: 'v{{ project_version }}'
+        Repository: '{{ git_info.repo_name }}'

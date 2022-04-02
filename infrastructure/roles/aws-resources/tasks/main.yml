@@ -1,4 +1,9 @@
 ---
 
-- import_tasks: 'lambda-error-reporting.yml'
-- import_tasks: 'lambda-cw-alarm-notification.yml'
+- name: 'retrieve Slack incoming message webhook url'
+  set_fact:
+    slack_webhook_url: "{{ lookup('aws_ssm', '/ops-ci/slack-webhook-alarms', decrypt=True, region=aws_region) }}"
+
+- import_tasks: 'lambda-function-errors.yml'
+
+- import_tasks: 'cloudwatch-alarms.yml'

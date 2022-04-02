@@ -18,7 +18,7 @@ export class Slack {
         msg.on('end', () => {
           if (err)
           {
-            console.error('Failed to send to slack. Got non 2xx response.', {responseStatusCode: msg.statusCode, responseStatusMessage: msg.statusMessage, requestBody: bodyJson, responseBody: resp})
+            console.error('Failed to send to Slack. Got non 2xx response.', {responseStatusCode: msg.statusCode, responseStatusMessage: msg.statusMessage, requestBody: bodyJson, responseBody: resp})
             rej(new Error('Non 2xx response: ' + resp))
           }
           res()

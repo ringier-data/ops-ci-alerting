@@ -1,7 +1,5 @@
 ---
 account_groups:
-  - rcplus
+  - iris
 environments:
   - dev
-  - stg
-  - prod
