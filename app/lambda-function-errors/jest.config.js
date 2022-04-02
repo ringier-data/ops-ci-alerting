@@ -13,14 +13,6 @@ module.exports = {
     '<rootDir>/node_modules/'
   ],
   coverageReporters: ['json-summary', 'text'],
-  coverageThreshold: {
-    global: {
-      branches: 75,
-      functions: 75,
-      lines: 75,
-      statements: 75
-    }
-  },
   setupFiles: [],
   setupFilesAfterEnv: [
     './jest.setup.js'
