@@ -1,0 +1,16 @@
+---
+- name: '[lambda-function-errors] build lambda function'
+  include_role:
+    name: 'ringier.aws_cicd.build_lambda_function'
+  vars:
+    source_path: '{{ playbook_dir }}/../app/lambda-function-errors'
+
+- name: '[lambda-function-errors] get CloudFormation template'
+  set_fact:
+    template_filename: '{{ role_path }}/files/cf-lambda-function-errors.yml'
+
+- include_role:
+    name: 'ringier.aws_cicd.run_cloudformation'
+  vars:
+    stack_name: '{{env}}-{{project_id}}-lambda-function-errors'
+    template: '{{ template_filename }}'

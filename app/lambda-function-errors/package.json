@@ -1,9 +1,8 @@
 {
-  "name": "lambda-error-reporting",
+  "name": "lambda-function-errors",
   "version": "1.0.0",
   "description": "Reports to Slack Webhook if a lambda function has failed withing a specified time range",
   "main": "dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
   "scripts": {
     "test": "jest --collectCoverage  --errorOnDeprecated --logHeapUsage --forceExit --runInBand test/**",
     "build": "npx tsc",
@@ -12,6 +11,9 @@
     "tslint": "tslint 'src/**/*.ts' 'test/**/*.ts'",
     "tslint:fix": "tslint --fix 'src/**/*.ts' 'test/**/*.ts'"
   },
+  "files": [
+    "dist/src/*.js"
+  ],
   "devDependencies": {
     "@types/aws-lambda": "^8.10.68",
     "@types/jest": "^26.0.14",
@@ -27,13 +29,13 @@
     "typescript": "^4.1.3"
   },
   "engines": {
-    "node": ">= 12 < 13",
+    "node": ">= 14",
     "npm": ">= 6.9.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ringier-data/rcplus-monitoring.git",
-    "directory": "src/lambda-error-reporting"
+    "url": "git+https://github.com/ringier-data/ops-ci-alerting.git",
+    "directory": "app/lambda-function-errors"
   },
   "keywords": [
     "Ringier",
@@ -41,6 +43,6 @@
     "Reporting",
     "Monitoring"
   ],
-  "author": "Connect+ Development Team",
-  "license": "SEE LICENSE IN LICENSE"
+  "author": "Ringier AG",
+  "license": "MIT"
 }

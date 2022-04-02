@@ -9,7 +9,7 @@ export const main = async (cw: aws.CloudWatch, slack: Slack, event: ScheduledEve
   // LOOK INTO / TODO: Use the rule ARN from event.resources[0] to look up the periodicity instead of hard-coding it in RULE_INTERVAL_IN_MINUTES.
   // Then we could have one for example every 5 minutes and one every morning/week.
   // if (event.resources.length !== 1) throw new Error('Got event.resources='+JSON.stringify(event.resources) + '. Only exactly 1 element is supported.')
-  
+
   const endTime = new Date(Date.parse(event.time))
 
   // Get all lambda fn:s error count
@@ -26,7 +26,7 @@ export const main = async (cw: aws.CloudWatch, slack: Slack, event: ScheduledEve
 
   if (filteredFunctionsWhichDidErrors.length > 0) {
     await Promise.all(filteredFunctionsWhichDidErrors.map(x => slack.postMessage(getSlackBody(x.name, x.errors, endTime, scheduleRateIntervalInMinutes))))
-    console.log(`Posted all to slack.`)
+    console.log(`Posted all to Slack.`)
   } else {
     console.log(`Nothing to do. Exiting.`)
   }

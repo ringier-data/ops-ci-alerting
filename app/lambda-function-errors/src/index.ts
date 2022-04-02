@@ -11,8 +11,8 @@ export const handler : ScheduledHandler = async (event: ScheduledEvent) => {
   if (!cw) cw = new aws.CloudWatch({region: process.env.AWS_REGION});
   if (!slack) {
     /* istanbul ignore if */
-    if (!process.env.SLACK_HOOK_URL) throw new Error('SLACK_HOOK_URL must be defined')
-    slack = new Slack(process.env.SLACK_HOOK_URL)
+    if (!process.env.SLACK_WEBHOOK_URL) throw new Error('SLACK_WEBHOOK_URL must be defined')
+    slack = new Slack(process.env.SLACK_WEBHOOK_URL)
   }
 
   const ignoreFunctions = (process.env.IGNORE_FUNCTIONS || '').split(',')
