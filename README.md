@@ -1,4 +1,4 @@
 # ops-ci-alerting
 
-**Current version: v1.0.1**
+**Current version: v1.0.2**
 

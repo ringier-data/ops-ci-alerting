@@ -51,7 +51,7 @@ Resources:
         Variables:
           SLACK_WEBHOOK_URL: '{{ slack_webhook_url }}'
           ENVIRONMENT: '{{ env }}'
-      Handler: index.handler
+      Handler: dist/src/index.handler
       MemorySize: 128
       Runtime: nodejs14.x
       Timeout: 15
