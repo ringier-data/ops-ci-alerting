@@ -52,6 +52,10 @@ async function processCwAlarmRecord(record: EventBridgeEvent<'Batch Job State Ch
   const metricFilters: CloudWatchLogs.Types.DescribeMetricFiltersResponse = await cwl.describeMetricFilters(requestParams).promise();
 
   if (record.detail.configuration.description && record.detail.configuration.description.toLowerCase().indexOf('error logged') !== -1) {
+    if (record.detail.state.value === 'OK') {
+      // Error logged alarm always recover immediately, we do not report it.
+      return;
+    }
     return await postSlackMessageForErrorLogs(record as EventBridgeEvent<'CloudWatch Alarm State Change', any>, metricFilters);
   } else {
     const { text, color, context, logs: attachments } = await getSlackMessage(record, metricFilters);
@@ -70,14 +74,16 @@ async function postSlackMessageForErrorLogs(
   const alarmDescription = record.detail.configuration.description || '(no alarm-description found!)';
   const alarmName = record.detail.alarmName || '(no alarm-name found!)';
   const logs = await getLogs(record, metricFilters);
+  const subject = `:warning: *CloudWatch Logs* ${alarmDescription}`;
 
   const body = {
+    text: subject, // this is workaround for a Slack limitation, see https://github.com/RasaHQ/rasa/issues/3561
     blocks: [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:warning: *CloudWatch Logs* ${alarmDescription}`,
+          text: subject,
         },
       },
       {
@@ -99,12 +105,23 @@ async function postSlackMessageForErrorLogs(
   };
 
   if (Array.isArray(logs) && logs.length > 0) {
-    logs.forEach((log) => {
+    logs.forEach((log, i) => {
+      let msg = '';
+      log.split('\n').forEach((line: string) => {
+        if (line.trim().length > 0) {
+          msg = `${msg}${msg === '' ? '' : '\n'}> ${line}`;
+        }
+      });
+      if (i > 0) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        body.blocks.push({ type: 'divider' });
+      }
       body.blocks.push({
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `> ${log}`,
+          text: msg,
         },
       });
     });
