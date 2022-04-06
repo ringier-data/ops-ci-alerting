@@ -36,20 +36,14 @@ const getSlackBody = (functionName: string, errorCount: number, endTime: Date, s
   const textRealtime = `in the last ${scheduleRateIntervalInMinutes} minutes`
   const textOlder = `between ${new Date(endTime.valueOf() - scheduleRateIntervalInMinutes)} and ${endTime}`
   return {
-    username: 'Lambda Error',
-    attachments: [
+    blocks: [
       {
-        color: '#eb9645',
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `:warning: Function \`${functionName}\` failed ${errorCount} times ${(new Date().valueOf() - endTime.valueOf()) > 60000 ? textOlder : textRealtime}`
-            }
-          }
-        ]
-      }
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:warning: *Lambda Error* Function \`${functionName}\` failed ${errorCount} times ${(new Date().valueOf() - endTime.valueOf()) > 60000 ? textOlder : textRealtime}`,
+        },
+      },
     ]
   }
 }
