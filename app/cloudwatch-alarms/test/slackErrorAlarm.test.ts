@@ -1,17 +1,20 @@
-jest.mock('request-promise');
+jest.mock('axios');
 
 import faker from 'faker';
-import requestPromise from 'request-promise';
+import axios from 'axios';
 import { handler as postRecords } from '../src';
 import testEventAlarm from './testEvent-EventBridge-alarm.json';
 import testEventAwsBatch from './testEvent-EventBridge-awsbatch.json';
 import nock from 'nock';
 
 describe('Slack alarm lambda', () => {
+  const url = faker.internet.url();
+  const env = faker.lorem.word();
+
   beforeAll(() => {
     process.env.AWS_REGION = 'fake-region';
-    process.env.SLACK_WEBHOOK_URL = faker.internet.url();
-    process.env.ENVIRONMENT = faker.lorem.word();
+    process.env.SLACK_WEBHOOK_URL = url;
+    process.env.ENVIRONMENT = env;
     process.env.AWS_ACCESS_KEY_ID = 'fakeId';
     process.env.AWS_SECRET_ACCESS_KEY = 'fakeKeyToPreventRequestToEC2Metadata';
   });
@@ -31,40 +34,18 @@ describe('Slack alarm lambda', () => {
       // @ts-ignore
       await postRecords(event);
 
-      expect(requestPromise).toHaveBeenCalledTimes(1);
-      expect(requestPromise).toBeCalledWith({
-        uri: process.env.SLACK_WEBHOOK_URL,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-          username: `CloudWatch (${process.env.ENVIRONMENT} ${process.env.AWS_REGION})`,
-          attachments: [
-            {
-              color: ALARM_TRIGGERING_COLOR,
-              blocks: [
-                {
-                  type: 'section',
-                  text: {
-                    type: 'mrkdwn',
-                    text: expectedText,
-                  },
-                },
-                {
-                  type: 'context',
-                  elements: [
-                    {
-                      type: 'plain_text',
-                      text: expectedContext,
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        json: true,
-        followRedirects: true,
-        followAllRedirects: true,
+      expect(axios.post).toHaveBeenCalledTimes(1);
+      expect(axios.post).toBeCalledWith(url, {
+        attachments: [
+          {
+            blocks: [
+              { text: { text: ':warning: AWS Batch job `event-test` failed', type: 'mrkdwn' }, type: 'section' },
+              { elements: [{ text: 'Job ID 4c7599ae-0a82-49aa-ba5a-4727fcce14a8', type: 'plain_text' }], type: 'context' },
+            ],
+            color: '#de4c1f',
+          },
+        ],
+        username: `CloudWatch (${env} fake-region)`,
       });
     });
   });
@@ -100,57 +81,35 @@ describe('Slack alarm lambda', () => {
       // @ts-ignore
       await postRecords(event);
 
-      expect(requestPromise).toHaveBeenCalledTimes(1);
-      expect(requestPromise).toBeCalledWith({
-        uri: process.env.SLACK_WEBHOOK_URL,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-          username: `CloudWatch (${process.env.ENVIRONMENT} ${process.env.AWS_REGION})`,
-          attachments: [
-            {
-              color: ALARM_TRIGGERING_COLOR,
-              blocks: [
-                {
-                  type: 'section',
-                  text: {
-                    type: 'mrkdwn',
-                    text: expectedText,
+      expect(axios.post).toHaveBeenCalledTimes(1);
+      expect(axios.post).toBeCalledWith(url, {
+        attachments: [
+          {
+            blocks: [
+              {
+                text: {
+                  text: ':warning: Triggered: Triggered when webhook errors occurs more often than 1 time per 5 minutes',
+                  type: 'mrkdwn',
+                },
+                type: 'section',
+              },
+              {
+                elements: [
+                  {
+                    text: 'sso-web-hooks-lambda-stg-WebHooksMetricFilterAlarm-1XPC27WQKUXOI (2020-09-08T05:59:13.148+0000)',
+                    type: 'plain_text',
                   },
-                },
-                {
-                  type: 'context',
-                  elements: [
-                    {
-                      type: 'plain_text',
-                      text: expectedContext,
-                    },
-                  ],
-                },
-                {
-                  type: 'divider',
-                },
-                {
-                  type: 'section',
-                  text: {
-                    type: 'mrkdwn',
-                    text: '```\nlog-line-1\n```',
-                  },
-                },
-                {
-                  type: 'section',
-                  text: {
-                    type: 'mrkdwn',
-                    text: '```\nlog-line-2\n```',
-                  },
-                },
-              ],
-            },
-          ],
-        },
-        json: true,
-        followRedirects: true,
-        followAllRedirects: true,
+                ],
+                type: 'context',
+              },
+              { type: 'divider' },
+              { text: { text: '```\nlog-line-1\n```', type: 'mrkdwn' }, type: 'section' },
+              { text: { text: '```\nlog-line-2\n```', type: 'mrkdwn' }, type: 'section' },
+            ],
+            color: '#de4c1f',
+          },
+        ],
+        username: 'CloudWatch (' + env + ' fake-region)',
       });
     });
 
@@ -166,40 +125,32 @@ describe('Slack alarm lambda', () => {
       // @ts-ignore
       await postRecords(event);
 
-      expect(requestPromise).toHaveBeenCalledTimes(1);
-      expect(requestPromise).toBeCalledWith({
-        uri: process.env.SLACK_WEBHOOK_URL,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-          username: `CloudWatch (${process.env.ENVIRONMENT} ${process.env.AWS_REGION})`,
-          attachments: [
-            {
-              color: ALARM_TRIGGERING_COLOR,
-              blocks: [
-                {
-                  type: 'section',
-                  text: {
-                    type: 'mrkdwn',
-                    text: expectedText,
+      expect(axios.post).toHaveBeenCalledTimes(1);
+      expect(axios.post).toBeCalledWith(url, {
+        attachments: [
+          {
+            blocks: [
+              {
+                text: {
+                  text: ':warning: Triggered: Triggered when webhook errors occurs more often than 1 time per 5 minutes',
+                  type: 'mrkdwn',
+                },
+                type: 'section',
+              },
+              {
+                elements: [
+                  {
+                    text: 'sso-web-hooks-lambda-stg-WebHooksMetricFilterAlarm-1XPC27WQKUXOI (2020-09-08T05:59:13.148+0000)',
+                    type: 'plain_text',
                   },
-                },
-                {
-                  type: 'context',
-                  elements: [
-                    {
-                      type: 'plain_text',
-                      text: expectedContext,
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        json: true,
-        followRedirects: true,
-        followAllRedirects: true,
+                ],
+                type: 'context',
+              },
+            ],
+            color: '#de4c1f',
+          },
+        ],
+        username: 'CloudWatch (' + env + ' fake-region)',
       });
     });
 
@@ -209,7 +160,7 @@ describe('Slack alarm lambda', () => {
       // @ts-ignore
       await postRecords(event);
 
-      expect(requestPromise).toHaveBeenCalledTimes(0);
+      expect(axios.post).toHaveBeenCalledTimes(0);
     });
   });
 });
