@@ -1,6 +1,6 @@
 {
   "name": "cloudwatch-alarms",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Send notification to Slack when CW Alarm state change",
   "main": "dist/src/index.js",
   "devDependencies": {
