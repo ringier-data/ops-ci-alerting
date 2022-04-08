@@ -13,3 +13,7 @@ phases:
       - ./ops-ci-shared/scripts/ci-deploy.sh
     finally:
       - ./ops-ci-shared/scripts/ci-notify-slack.sh
+cache:
+  paths:
+    - '/root/.npm/**/*'
+    - '/root/.ansible/**/*'

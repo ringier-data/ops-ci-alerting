@@ -109,21 +109,19 @@ async function postSlackMessageForErrorLogs(
       let msg = '';
       log.split('\n').forEach((line: string) => {
         if (line.trim().length > 0) {
-          msg = `${msg}${msg === '' ? '' : '\n'}> ${line}`;
+          msg = `${msg}${msg === '' ? '' : '\n'}${line}`;
         }
       });
-      if (i > 0) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        body.blocks.push({ type: 'divider' });
+      if (msg !== '') {
+        msg = '```\n' + msg + '\n```';
+        body.blocks.push({
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: msg,
+          },
+        });
       }
-      body.blocks.push({
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: msg,
-        },
-      });
     });
   }
   await axios.post(process.env.SLACK_WEBHOOK_URL as string, body);
