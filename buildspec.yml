@@ -17,3 +17,4 @@ cache:
   paths:
     - '/root/.npm/**/*'
     - '/root/.ansible/**/*'
+    - '/root/.cache/pip/**/*'
