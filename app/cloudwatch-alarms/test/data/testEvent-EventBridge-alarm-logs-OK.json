@@ -1,0 +1,45 @@
+{
+  "version": "0",
+  "id": "5706d6ae-40e7-2836-964f-2904de2c95ec",
+  "detail-type": "CloudWatch Alarm State Change",
+  "source": "aws.cloudwatch",
+  "account": "506151400835",
+  "time": "2022-04-11T14:49:59Z",
+  "region": "eu-central-1",
+  "resources": [
+    "arn:aws:cloudwatch:eu-central-1:506151400835:alarm:dev-iris-backend-ecs-task-BackendErrorLogAlarm-13T309AJLZ0NE"
+  ],
+  "detail": {
+    "alarmName": "dev-iris-backend-ecs-task-BackendErrorLogAlarm-13T309AJLZ0NE",
+    "state": {
+      "value": "OK",
+      "reason": "Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching].",
+      "reasonData": "{\"version\":\"1.0\",\"queryDate\":\"2022-04-11T14:49:59.948+0000\",\"statistic\":\"SampleCount\",\"period\":60,\"recentDatapoints\":[],\"threshold\":1.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2022-04-11T14:49:00.000+0000\"}]}",
+      "timestamp": "2022-04-11T14:49:59.950+0000"
+    },
+    "previousState": {
+      "value": "ALARM",
+      "reason": "Threshold Crossed: 1 datapoint [1.0 (11/04/22 14:42:00)] was greater than or equal to the threshold (1.0).",
+      "reasonData": "{\"version\":\"1.0\",\"queryDate\":\"2022-04-11T14:43:59.944+0000\",\"startDate\":\"2022-04-11T14:42:00.000+0000\",\"statistic\":\"SampleCount\",\"period\":60,\"recentDatapoints\":[1.0],\"threshold\":1.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2022-04-11T14:42:00.000+0000\",\"sampleCount\":1.0,\"value\":1.0}]}",
+      "timestamp": "2022-04-11T14:43:59.949+0000"
+    },
+    "configuration": {
+      "metrics": [
+        {
+          "id": "f4bf9f90-bf14-7411-276a-7b2ec59c13ef",
+          "metricStat": {
+            "metric": {
+              "namespace": "dev-iris-backend",
+              "name": "dev-iris-backend-error-log-metric-filter",
+              "dimensions": {}
+            },
+            "period": 60,
+            "stat": "SampleCount"
+          },
+          "returnData": true
+        }
+      ],
+      "description": "Backend - Error Logged"
+    }
+  }
+}
