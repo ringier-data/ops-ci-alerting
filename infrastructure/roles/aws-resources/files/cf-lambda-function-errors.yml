@@ -35,6 +35,7 @@ Resources:
           SLACK_WEBHOOK_URL: '{{ slack_webhook_url }}'
           RULE_INTERVAL_IN_MINUTES: '25' # this is +5 minutes to capture any delay in the Metrics reporting (this has happened that Lambda did not report ERROR in Lambda withing 1 minute!) and timeout errors
           IGNORE_FUNCTIONS: '{{ ignore_functions }}'
+          ENVIRONMENT: '{{ env }}'
       Handler: dist/src/index.handler
       MemorySize: 128
       Runtime: nodejs14.x

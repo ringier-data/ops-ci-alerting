@@ -49,7 +49,8 @@
     }    
   },
   "include": [
-    "./src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "./jest.config.js",

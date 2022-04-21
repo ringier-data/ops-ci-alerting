@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "strict": false,
+    "noImplicitAny": false,
+    "typeRoots" : [
+      "../node_modules/@types"
+    ],
+    "isolatedModules": true
+  },
+  "exclude": [
+    "../node_modules"
+  ],
+  "include": [
+    "./**/*.ts"
+  ]
+}
