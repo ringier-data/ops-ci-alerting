@@ -88,7 +88,7 @@ async function getLogsFromCloudWatch(record: any) {
     metricNamespace: record.detail.configuration.metrics[0].metricStat.metric.namespace,
   };
   const metricFilterData: MetricFiltersResponse = await cwl.describeMetricFilters(paramDescribeFilters).promise();
-  const metricFilter = metricFilterData?.metricFilters?.at(0);
+  const metricFilter = metricFilterData?.metricFilters?.shift();
   if (!metricFilter) {
     return {
       logs: [],
