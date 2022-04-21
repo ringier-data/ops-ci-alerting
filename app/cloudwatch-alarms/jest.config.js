@@ -12,6 +12,14 @@ module.exports = {
     '^jose/(.*)$': '<rootDir>/node_modules/jose/dist/node/cjs/$1',
   },
   coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    global: {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100
+    }
+  },
   collectCoverageFrom: ['src/**/*.*'],
   globals: {
     'ts-jest': {
