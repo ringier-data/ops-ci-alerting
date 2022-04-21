@@ -1,244 +1,109 @@
 import { EventBridgeEvent } from 'aws-lambda';
-import axios from 'axios';
 import aws, { CloudWatchLogs } from 'aws-sdk';
+import { parseLogs } from './logs';
+import { newPostSlackMessage } from './slack';
+import { FilterLogEventsRequest } from 'aws-sdk/clients/cloudwatchlogs';
+
 let cwl: CloudWatchLogs;
 
-// This lambda can be hooked up to CW alarms which alarm based on a MetricFilter
+type AlarmStateEvent = EventBridgeEvent<'CloudWatch Alarm State Change', any>;
+type BatchJobStateChangeEvent = EventBridgeEvent<'Batch Job State Change', any>;
+type MetricFiltersResponse = CloudWatchLogs.Types.DescribeMetricFiltersResponse;
+
+// This lambda can be hooked up to CW alarms which alarm based on a MetricFilter,
 // and it will extract the log-lines causing the alarm to trigger
-export async function handler(event: EventBridgeEvent<'Batch Job State Change' | 'CloudWatch Alarm State Change', any>): Promise<void> {
+export async function handler(event: AlarmStateEvent | BatchJobStateChangeEvent): Promise<void> {
   if (!cwl) {
     cwl = new aws.CloudWatchLogs({ region: process.env.AWS_REGION });
   }
-  if (event && event.source === 'aws.cloudwatch' && event['detail-type'] === 'CloudWatch Alarm State Change') {
-    console.log(`Received AWS CloudWatch Alarm State Change event.`, { event });
-
-    try {
-      await processCwAlarmRecord(event);
-      console.log('Posted all SNS records to Slack');
-    } catch (err) {
-      console.error('Error during posting messages to Slack');
-      throw err;
-    }
-  } else if (
-    typeof event === 'object' &&
-    typeof event.detail === 'object' &&
-    event.source === 'aws.batch' &&
-    event['detail-type'] === 'Batch Job State Change' &&
-    event.detail &&
-    event.detail.status === 'FAILED'
-  ) {
+  if (event?.detail?.status === 'FAILED' && event.source === 'aws.batch' && event['detail-type'] === 'Batch Job State Change') {
     // This happens when AWS Batch job fails
-    try {
-      await processAwsBatchFailedMessage(event);
-      console.log('Posted all SNS records to Slack');
-    } catch (err) {
-      console.error('Error during posting messages to Slack');
-      throw err;
+    await postSlackMessageForBatchJobFailure(event as BatchJobStateChangeEvent);
+    console.log('Posted AWS Batch job failure notification to Slack');
+  } else if (event?.source === 'aws.cloudwatch' && event['detail-type'] === 'CloudWatch Alarm State Change') {
+    if (event.detail?.configuration?.description?.toLowerCase().endsWith('error logged')) {
+      // NOTE-zw, there is no easy way to know if a CloudWatch alarm is triggered by filtering the CloudWatch logs.
+      // We play a trick to distinguish this kind of alarms by describing the alarm as "blah...blah... Error Logged". e.g.
+      //    ```yaml
+      //      SAPProxyErrorLogAlarm:
+      //        Type: AWS::CloudWatch::Alarm
+      //        Properties:
+      //          AlarmDescription: 'SAP API Proxy - Error Logged' <-- HERE IS THE TRICK
+      //          ComparisonOperator: 'GreaterThanOrEqualToThreshold'
+      //      ...
+      //    ```
+      if (event.detail.state.value === 'OK') {
+        // Error logged alarm always recover immediately, we do not report it.
+        console.log('Ignored a CloudWatch Alarm state change as it was a log message filter metric changed back to OK');
+        return;
+      }
+      await postSlackMessageForErrorLogs(event as AlarmStateEvent);
+      console.log('Posted CloudWatch Logs errors to Slack');
+    } else {
+      console.log(`Received AWS CloudWatch Alarm State Change event: ${JSON.stringify(event)}`);
+      await postSlackMessageForAlarmStateChange(event as AlarmStateEvent);
     }
   } else {
-    console.log('Found no records');
+    console.log('Found no relevant records');
   }
 }
 
-async function processAwsBatchFailedMessage(record: any) {
-  return postSlackMessage(`:warning: AWS Batch job \`${record.detail.jobName}\` failed`, '#de4c1f', `Job ID ${record.detail.jobId}`, []);
-}
+async function postSlackMessageForBatchJobFailure(record: BatchJobStateChangeEvent): Promise<void> {
+  const subject = `AWS Batch (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: Job \`${record.detail.jobName}\` failed`;
 
-async function processCwAlarmRecord(record: EventBridgeEvent<'Batch Job State Change' | 'CloudWatch Alarm State Change', any>) {
-  const requestParams = {
-    metricName: record.detail.configuration.metrics[0].metricStat.metric.name,
-    metricNamespace: record.detail.configuration.metrics[0].metricStat.metric.namespace,
-  };
-  const metricFilters: CloudWatchLogs.Types.DescribeMetricFiltersResponse = await cwl.describeMetricFilters(requestParams).promise();
-
-  if (record.detail.configuration.description && record.detail.configuration.description.toLowerCase().indexOf('error logged') !== -1) {
-    if (record.detail.state.value === 'OK') {
-      // Error logged alarm always recover immediately, we do not report it.
-      return;
-    }
-    return await postSlackMessageForErrorLogs(record as EventBridgeEvent<'CloudWatch Alarm State Change', any>, metricFilters);
-  } else {
-    const { text, color, context, logs: attachments } = await getSlackMessage(record, metricFilters);
-    return postSlackMessage(text, color, context, attachments);
-  }
-}
-
-/**
- * Simplify the timestamp string to keep it short
- */
-export function shortenTimestamp(input: string): string {
-  const time = new Date(input).toLocaleString('de-CH', {
-    timeZone: 'Europe/Zurich',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-  return `${time.substring(6, 10)}${time.substring(3, 5)}${time.substring(0, 2)} ${time.substring(12, 20)}`;
+  await newPostSlackMessage(subject, record.time, `JobId: ${record.detail.jobId}`);
 }
 
 /**
  * Special handling of alarms generated by filtering the CloudWatch Logs. This type of alarm will be switched to the InAlarm state then
  * changed back immediately. There is no need to report the state change.
  */
-async function postSlackMessageForErrorLogs(
-  record: EventBridgeEvent<'CloudWatch Alarm State Change', any>,
-  metricFilters: CloudWatchLogs.Types.DescribeMetricFiltersResponse
-) {
-  const alarmDescription = record.detail.configuration.description || '(no alarm-description found!)';
-  const alarmName = record.detail.alarmName || '(no alarm-name found!)';
-  const logs = await getLogs(record, metricFilters);
-  const subject = `:warning: *CloudWatch Logs* (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}): ${alarmDescription}`;
+async function postSlackMessageForErrorLogs(record: AlarmStateEvent): Promise<void> {
+  const alarmDescription = record.detail.configuration.description;
+  const { logs, logGroupName } = await getLogsFromCloudWatch(record);
+  const subject = `CloudWatch Logs (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: ${alarmDescription}`;
 
-  const body = {
-    text: subject, // this is workaround for a Slack limitation, see https://github.com/RasaHQ/rasa/issues/3561
-    blocks: [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: subject,
-        },
-      },
-      {
-        type: 'context',
-        elements: [
-          {
-            type: 'plain_text',
-            text: `${shortenTimestamp(record.detail.state.timestamp)} ${alarmName}`,
-            emoji: false,
-          },
-        ],
-      },
-    ],
-  };
-
-  if (Array.isArray(logs) && logs.length > 0) {
-    logs.forEach((log, i) => {
-      let msg = '';
-      log.split('\n').forEach((line: string) => {
-        if (line.trim().length > 0) {
-          msg = `${msg}${msg === '' ? '' : '\n'}${line}`;
-        }
-      });
-      if (msg !== '') {
-        msg = '```\n' + msg + '\n```';
-        body.blocks.push({
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: msg,
-          },
-        });
-      }
-    });
-  }
-  await axios.post(process.env.SLACK_WEBHOOK_URL as string, body);
+  await newPostSlackMessage(subject, record.detail.state.timestamp, `LG: ${logGroupName}`, logs);
 }
 
-async function postSlackMessage(text: any, color: any, context: any, attachments: any) {
-  const body = {
-    username: `CloudWatch (${process.env.ENVIRONMENT} ${process.env.AWS_REGION})`,
-    attachments: [
-      {
-        color,
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text,
-            },
-          },
-          {
-            type: 'context',
-            elements: [
-              {
-                type: 'plain_text',
-                text: context,
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-  if (attachments && attachments.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    body.attachments[0].blocks.push({ type: 'divider' });
-    attachments.forEach((attachment: any) => {
-      body.attachments[0].blocks.push({
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '```\n' + attachment + '\n```',
-        },
-      });
-    });
-  }
-  await axios.post(process.env.SLACK_WEBHOOK_URL as string, body);
-}
-
-async function getSlackMessage(record: any, metricFilters: any) {
+async function postSlackMessageForAlarmStateChange(record: AlarmStateEvent) {
   const ALARM_WARNING_SYMBOL = ':warning:';
   const ALARM_RESOLVED_SYMBOL = ':white_check_mark:';
-  const ALARM_RESOLVED_COLOR = '#00aa00';
-  const ALARM_TRIGGERING_COLOR = '#de4c1f';
-
-  const alarmDescription = record.detail.configuration.description || '(no alarm-description found!)';
-  const alarmName = record.detail.alarmName || '(no alarm-name found!)';
-  const logs = await getLogs(record, metricFilters);
+  const alarmDescription = record.detail.configuration.description || '(alarm-description not found)';
   const isOK = record.detail.state.value === 'OK';
   const symbol = isOK ? ALARM_RESOLVED_SYMBOL : ALARM_WARNING_SYMBOL;
-  const summary = isOK ? 'Resolved' : 'Triggered';
-  return {
-    text: `${symbol} ${summary}: ${alarmDescription}`,
-    context: `${alarmName} (${record.detail.state.timestamp})`,
-    color: isOK ? ALARM_RESOLVED_COLOR : ALARM_TRIGGERING_COLOR,
-    logs,
-  };
+  const { logs } = await getLogsFromCloudWatch(record);
+
+  const subject = `CloudWatch Alarm (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) ${symbol} ${alarmDescription}`;
+  const alarmName = record.detail.alarmName || '(alarm-name not found)';
+
+  await newPostSlackMessage(subject, record.detail.state.timestamp, `AlarmName: ${alarmName}`, logs);
 }
 
-async function getLogs(record: any, metricFilterData: any) {
+async function getLogsFromCloudWatch(record: any) {
   const timestamp = Date.parse(record.detail.state.timestamp);
   const offset = record.detail.configuration.metrics[0].metricStat.period * 1000 * 2; // multiplying with 2 here to compensate for delays in StateChangeTime
-  const metricFilter = metricFilterData.metricFilters[0];
+  const paramDescribeFilters = {
+    metricName: record.detail.configuration.metrics[0].metricStat.metric.name,
+    metricNamespace: record.detail.configuration.metrics[0].metricStat.metric.namespace,
+  };
+  const metricFilterData: MetricFiltersResponse = await cwl.describeMetricFilters(paramDescribeFilters).promise();
+  const metricFilter = metricFilterData?.metricFilters?.at(0);
   if (!metricFilter) {
-    return [];
+    return {
+      logs: [],
+      logGroupName: '',
+    };
   }
-  const parameters = {
-    logGroupName: metricFilter.logGroupName,
-    filterPattern: metricFilter.filterPattern ? metricFilter.filterPattern : '',
+  const paramFilterLogEvents: FilterLogEventsRequest = {
+    logGroupName: metricFilter.logGroupName as string,
+    filterPattern: metricFilter.filterPattern || '',
     startTime: timestamp - offset,
     endTime: timestamp,
   };
-  const data = await cwl.filterLogEvents(parameters).promise();
-  const logs: any[] = [];
-  for (let i = 0; data && data.events && i < data.events.length && i < 5; i++) {
-    // limit
-    try {
-      const msgObj = JSON.parse(data.events[i]['message'] as string);
-      const { traceId, msg, component, time } = msgObj;
-      let log = '';
-      if (traceId) {
-        log += `traceId: '${traceId}'\n`;
-      }
-      if (component) {
-        log += `component: '${component}'\n`;
-      }
-      if (time) {
-        log += `time: '${time}'\n`;
-      }
-      if (msg) {
-        log += `msg: '${msg.substring(0, 100)}${msg.length > 100 ? '(...)' : ''}'`;
-      }
-      logs.push(log);
-    } catch {
-      logs.push(data.events[i]['message']);
-    }
-  }
-  return logs;
+  const data = await cwl.filterLogEvents(paramFilterLogEvents).promise();
+  return {
+    logs: parseLogs(data?.events),
+    logGroupName: metricFilter.logGroupName,
+  };
 }

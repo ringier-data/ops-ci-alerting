@@ -1,0 +1,49 @@
+version: 2
+updates:
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    target-branch: "master"
+  - package-ecosystem: "npm"
+    directory: "/app/cloudwatch-alarms"
+    schedule:
+      interval: "monthly"
+    # Disable version updates for npm dependencies
+    open-pull-requests-limit: 0
+    target-branch: "develop"
+    versioning-strategy: "auto"
+    ignore:
+      - dependency-name: "@types/*"
+      - dependency-name: "@typescript-eslint/*"
+      - dependency-name: "aws-sdk"
+      - dependency-name: "eslint"
+      - dependency-name: "eslint*"
+      - dependency-name: "jest"
+      - dependency-name: "jest*"
+      - dependency-name: "nock"
+      - dependency-name: "npm"
+      - dependency-name: "prettier"
+      - dependency-name: "ts-jest"
+      - dependency-name: "typescript"
+  - package-ecosystem: "npm"
+    directory: "/app/lambda-function-errors"
+    schedule:
+      interval: "monthly"
+    # Disable version updates for npm dependencies
+    open-pull-requests-limit: 0
+    target-branch: "develop"
+    versioning-strategy: "auto"
+    ignore:
+      - dependency-name: "@types/*"
+      - dependency-name: "@typescript-eslint/*"
+      - dependency-name: "aws-sdk"
+      - dependency-name: "eslint"
+      - dependency-name: "eslint*"
+      - dependency-name: "jest"
+      - dependency-name: "jest*"
+      - dependency-name: "nock"
+      - dependency-name: "npm"
+      - dependency-name: "prettier"
+      - dependency-name: "ts-jest"
+      - dependency-name: "typescript"
