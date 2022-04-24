@@ -45,6 +45,23 @@ describe('Logs processor', () => {
     expect(parseLogs([{ message: JSON.stringify(obj) }])).toEqual(['{"time":"1649305725353","level":"ERROR","foo":"bar","jane":"doe"}']);
   });
 
+  it('should simplify the error when needed', () => {
+    const obj = {
+      time: '1649305725353',
+      level: 'ERROR',
+      foo: 'bar',
+      jane: 'doe',
+      error: {
+        name: 'NotImplementedError',
+        message: 'Something is not going right',
+        stack: 'a -> b -> c',
+      },
+    };
+    expect(parseLogs([{ message: JSON.stringify(obj) }])).toEqual([
+      '{"time":"1649305725353","level":"ERROR","foo":"bar","jane":"doe","error":"NotImplementedError. (check logs for more details)"}',
+    ]);
+  });
+
   it('should truncate plain message when it too long', () => {
     const short = '0123456789';
     const long = '01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789';

@@ -1,7 +1,10 @@
 class LogMessageNotKibanaReadyError extends Error {
-  constructor() {
+  readonly msgObj: any;
+
+  constructor(obj: any) {
     super('The log message is not ready for Kibana search');
     this.name = 'LogMessageNotKibanaReadyError';
+    this.msgObj = obj;
   }
 }
 
@@ -20,7 +23,7 @@ export function parseLogs(logs?: any[] | null): string[] {
       if (!traceId) {
         // The message can be deserialized into a JSON object, but it does not have property `traceId`, we jump directly to the raw output
         // noinspection ExceptionCaughtLocallyJS
-        throw new LogMessageNotKibanaReadyError();
+        throw new LogMessageNotKibanaReadyError(msgObj);
       }
       let log = '';
       if (component) {
@@ -37,10 +40,15 @@ export function parseLogs(logs?: any[] | null): string[] {
       }
       parsed.push(log);
     } catch (err: unknown) {
-      let msg = logs[i]['message'] as string;
-      if (!(err instanceof LogMessageNotKibanaReadyError)) {
+      let msg;
+      if (err instanceof LogMessageNotKibanaReadyError) {
+        if (err.msgObj.error?.name) {
+          err.msgObj.error = `${err.msgObj.error.name}. (check logs for more details)`;
+        }
+        msg = JSON.stringify(err.msgObj);
+      } else {
         // JSON.parse failed
-        msg = truncateMessage(msg);
+        msg = truncateMessage(logs[i]['message'] as string);
       }
       parsed.push(msg);
     }
