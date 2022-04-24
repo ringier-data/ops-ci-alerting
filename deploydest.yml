@@ -3,3 +3,6 @@ account_groups:
   - iris
 environments:
   - dev
+  - stg
+  - prod
+  - ops
