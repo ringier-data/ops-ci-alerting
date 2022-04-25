@@ -55,7 +55,7 @@ export const getSlackBody = (functionName: string, errorCount: number, endTime: 
   ).toISOString()} and ${endTime.toISOString()}`;
   const duration = Date.now() - endTime.valueOf();
   const timespan = duration > 60000 ? textOlder : textRealtime;
-  const message = `Lambda Function (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: Function \`${functionName}\` failed ${errorCount} times ${timespan}`;
+  const message = `Lambda Function (${process.env.PROJECT}-${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: Function \`${functionName}\` failed ${errorCount} times ${timespan}`;
   return {
     text: message,
     blocks: [

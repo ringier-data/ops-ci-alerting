@@ -49,7 +49,7 @@ export async function handler(event: AlarmStateEvent | BatchJobStateChangeEvent)
 }
 
 async function postSlackMessageForBatchJobFailure(record: BatchJobStateChangeEvent): Promise<void> {
-  const subject = `AWS Batch (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: Job \`${record.detail.jobName}\` failed`;
+  const subject = `AWS Batch (${process.env.PROJECT}-${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: Job \`${record.detail.jobName}\` failed`;
 
   await newPostSlackMessage(subject, record.time, `JobId: ${record.detail.jobId}`);
 }
@@ -61,7 +61,7 @@ async function postSlackMessageForBatchJobFailure(record: BatchJobStateChangeEve
 async function postSlackMessageForErrorLogs(record: AlarmStateEvent): Promise<void> {
   const alarmDescription = record.detail.configuration.description;
   const { logs, logGroupName } = await getLogsFromCloudWatch(record);
-  const subject = `CloudWatch Logs (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: ${alarmDescription}`;
+  const subject = `CloudWatch Logs (${process.env.PROJECT}-${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) :warning: ${alarmDescription}`;
 
   await newPostSlackMessage(subject, record.detail.state.timestamp, `LG: ${logGroupName}`, logs);
 }
@@ -74,7 +74,7 @@ async function postSlackMessageForAlarmStateChange(record: AlarmStateEvent) {
   const symbol = isOK ? ALARM_RESOLVED_SYMBOL : ALARM_WARNING_SYMBOL;
   const { logs } = await getLogsFromCloudWatch(record);
 
-  const subject = `CloudWatch Alarm (${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) ${symbol} ${alarmDescription}`;
+  const subject = `CloudWatch Alarm (${process.env.PROJECT}-${process.env.ENVIRONMENT} ${process.env.AWS_REGION}) ${symbol} ${alarmDescription}`;
   const alarmName = record.detail.alarmName || '(alarm-name not found)';
 
   await newPostSlackMessage(subject, record.detail.state.timestamp, `AlarmName: ${alarmName}`, logs);

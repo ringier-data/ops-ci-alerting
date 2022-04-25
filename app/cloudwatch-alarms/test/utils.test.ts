@@ -12,5 +12,4 @@ describe('Utilities', () => {
     expect(shortenTimestamp('2022-12-25T07:18:59.951+0000')).toBe('20221225 08:18:59');
     expect(shortenTimestamp('2022-12-25T07:18:59.951Z')).toBe('20221225 08:18:59');
   });
-
 });
