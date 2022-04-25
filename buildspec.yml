@@ -1,8 +1,8 @@
 version: 0.2
+env:
+  variables:
+    AGGRESSIVE_DEVELOPMENT: 1
 phases:
-  install:
-    runtime-versions:
-      python: 3.9
   pre_build:
     commands:
       - ./ops-ci-shared/scripts/ci-init.sh

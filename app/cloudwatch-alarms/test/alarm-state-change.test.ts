@@ -14,6 +14,7 @@ describe('CloudWatch Alarm state changed', () => {
   const chance = new Chance();
   const url = chance.url();
   const env = chance.word();
+  const project = chance.word();
 
   beforeAll(() => {
     process.env.AWS_REGION = 'fake-region';
@@ -21,6 +22,7 @@ describe('CloudWatch Alarm state changed', () => {
     process.env.ENVIRONMENT = env;
     process.env.AWS_ACCESS_KEY_ID = 'fakeId';
     process.env.AWS_SECRET_ACCESS_KEY = 'fakeKeyToPreventRequestToEC2Metadata';
+    process.env.PROJECT = project;
   });
 
   afterEach(() => {
@@ -61,7 +63,7 @@ describe('CloudWatch Alarm state changed', () => {
       blocks: [
         {
           text: {
-            text: `CloudWatch Alarm (${env} fake-region) :white_check_mark: Resolved when webhook errors occurs more often than 1 time per 5 minutes`,
+            text: `CloudWatch Alarm (${project}-${env} fake-region) :white_check_mark: Resolved when webhook errors occurs more often than 1 time per 5 minutes`,
             type: 'mrkdwn',
           },
           type: 'section',
@@ -79,7 +81,7 @@ describe('CloudWatch Alarm state changed', () => {
         { text: { text: '```\nlog-line-1\n```', type: 'mrkdwn' }, type: 'section' },
         { text: { text: '```\nlog-line-2\n```', type: 'mrkdwn' }, type: 'section' },
       ],
-      text: `CloudWatch Alarm (${env} fake-region) :white_check_mark: Resolved when webhook errors occurs more often than 1 time per 5 minutes`,
+      text: `CloudWatch Alarm (${project}-${env} fake-region) :white_check_mark: Resolved when webhook errors occurs more often than 1 time per 5 minutes`,
     });
   });
 
@@ -117,7 +119,7 @@ describe('CloudWatch Alarm state changed', () => {
       blocks: [
         {
           text: {
-            text: `CloudWatch Alarm (${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
+            text: `CloudWatch Alarm (${project}-${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
             type: 'mrkdwn',
           },
           type: 'section',
@@ -135,7 +137,7 @@ describe('CloudWatch Alarm state changed', () => {
         { text: { text: '```\nlog-line-1\n```', type: 'mrkdwn' }, type: 'section' },
         { text: { text: '```\nlog-line-2\n```', type: 'mrkdwn' }, type: 'section' },
       ],
-      text: `CloudWatch Alarm (${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
+      text: `CloudWatch Alarm (${project}-${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
     });
   });
 
@@ -173,7 +175,7 @@ describe('CloudWatch Alarm state changed', () => {
       blocks: [
         {
           text: {
-            text: `CloudWatch Alarm (${env} fake-region) :warning: (alarm-description not found)`,
+            text: `CloudWatch Alarm (${project}-${env} fake-region) :warning: (alarm-description not found)`,
             type: 'mrkdwn',
           },
           type: 'section',
@@ -191,7 +193,7 @@ describe('CloudWatch Alarm state changed', () => {
         { text: { text: '```\nlog-line-1\n```', type: 'mrkdwn' }, type: 'section' },
         { text: { text: '```\nlog-line-2\n```', type: 'mrkdwn' }, type: 'section' },
       ],
-      text: `CloudWatch Alarm (${env} fake-region) :warning: (alarm-description not found)`,
+      text: `CloudWatch Alarm (${project}-${env} fake-region) :warning: (alarm-description not found)`,
     });
   });
 
@@ -210,7 +212,7 @@ describe('CloudWatch Alarm state changed', () => {
       blocks: [
         {
           text: {
-            text: `CloudWatch Alarm (${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
+            text: `CloudWatch Alarm (${project}-${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
             type: 'mrkdwn',
           },
           type: 'section',
@@ -226,7 +228,7 @@ describe('CloudWatch Alarm state changed', () => {
           type: 'context',
         },
       ],
-      text: `CloudWatch Alarm (${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
+      text: `CloudWatch Alarm (${project}-${env} fake-region) :warning: Triggered when webhook errors occurs more often than 1 time per 5 minutes`,
     });
   });
 

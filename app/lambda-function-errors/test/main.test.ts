@@ -1,4 +1,6 @@
 // tslint:disable: no-any
+// noinspection DuplicatedCode
+
 import { main } from '../src/main';
 import { It, Mock, MockBehavior, Times } from 'typemoq';
 import { AWSError, CloudWatch, Response, Request } from 'aws-sdk';

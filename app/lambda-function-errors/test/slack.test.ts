@@ -8,10 +8,12 @@ nock.disableNetConnect();
 describe('Slack', () => {
   const chance = new Chance();
   const env = chance.word();
+  const project = chance.word();
 
   beforeAll(() => {
     process.env.AWS_REGION = 'fake-region';
     process.env.ENVIRONMENT = env;
+    process.env.PROJECT = project;
   });
 
   it('should make proper call to Slack endpoint', async () => {
@@ -61,11 +63,11 @@ describe('Slack', () => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Lambda Function (${env} fake-region) :warning: Function \`test-function1\` failed 15 times in the last 12 minutes`,
+            text: `Lambda Function (${project}-${env} fake-region) :warning: Function \`test-function1\` failed 15 times in the last 12 minutes`,
           },
         },
       ],
-      text: `Lambda Function (${env} fake-region) :warning: Function \`test-function1\` failed 15 times in the last 12 minutes`,
+      text: `Lambda Function (${project}-${env} fake-region) :warning: Function \`test-function1\` failed 15 times in the last 12 minutes`,
     });
 
     dateNowSpy.mockRestore();
@@ -77,11 +79,11 @@ describe('Slack', () => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Lambda Function (${env} fake-region) :warning: Function \`test-function1\` failed 21 times between 2022-04-21T09:15:16.000Z and 2022-04-21T10:20:16.000Z`,
+            text: `Lambda Function (${project}-${env} fake-region) :warning: Function \`test-function1\` failed 21 times between 2022-04-21T09:15:16.000Z and 2022-04-21T10:20:16.000Z`,
           },
         },
       ],
-      text: `Lambda Function (${env} fake-region) :warning: Function \`test-function1\` failed 21 times between 2022-04-21T09:15:16.000Z and 2022-04-21T10:20:16.000Z`,
+      text: `Lambda Function (${project}-${env} fake-region) :warning: Function \`test-function1\` failed 21 times between 2022-04-21T09:15:16.000Z and 2022-04-21T10:20:16.000Z`,
     });
 
     dateNowSpy.mockRestore();
