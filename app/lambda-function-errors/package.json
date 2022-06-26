@@ -1,6 +1,6 @@
 {
   "name": "lambda-function-errors",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Reports to Slack Webhook if a lambda function has failed withing a specified time range",
   "main": "dist/src/index.js",
   "scripts": {
