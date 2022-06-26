@@ -37,14 +37,14 @@ Resources:
           IGNORE_FUNCTIONS: '{{ ignore_functions }}'
           ENVIRONMENT: '{{ env }}'
           PROJECT: '{{ project_id }}'
-      Handler: dist/src/index.handler
+      Handler: 'dist/src/index.handler'
       MemorySize: 128
-      Runtime: nodejs14.x
+      Runtime: 'nodejs16.x'
       Timeout: 15
       Policies:
       - Version: '2012-10-17' 
         Statement:
-          - Effect: Allow
+          - Effect: 'Allow'
             Action:
               - cloudwatch:ListMetrics
               - cloudwatch:GetMetricData
