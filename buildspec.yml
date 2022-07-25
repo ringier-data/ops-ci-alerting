@@ -16,5 +16,6 @@ phases:
 cache:
   paths:
     - '/root/.npm/**/*'
-    - '/root/.ansible/**/*'
+    - '/root/.ansible/collections/**/*'
+    - '/root/.ansible/roles/**/*'
     - '/root/.cache/pip/**/*'

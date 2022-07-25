@@ -2,6 +2,7 @@
 account_groups:
   - iris
   - alloy
+  - scmi
 environments:
   - dev
   - stg
